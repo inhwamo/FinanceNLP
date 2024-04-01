@@ -1,66 +1,48 @@
 from flask import Flask, render_template, url_for, request, redirect
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+import requests  # Make sure to import requests
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
 db = SQLAlchemy(app)
 
-class Todo(db.Model):
+class FinancialData(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    content = db.Column(db.String(200), nullable=False)
-    complete = db.Column(db.Integer, default=0)
-    date_created = db.Column(db.DateTime, default=datetime.utcnow)
+    currency_pair = db.Column(db.String(10), nullable=False)
+    rate = db.Column(db.Float, nullable=False)
+    date_fetched = db.Column(db.DateTime, default=datetime.utcnow)
 
     def __repr__(self):
-        return '<Task %r>' % self.id
+        return f"<Rate {self.currency_pair} - {self.rate}>"
 
-@app.route('/',methods=['POST','GET'])
-def index():
-    if request.method == 'POST':
-        task_content = request.form['content']
-        new_task = Todo(content=task_content)
-
-        try:
-            db.session.add(new_task)
-            db.session.commit()
-            return redirect('/')
-        except:
-            return 'There was an issue adding your task'
-
+def fetch_exchange_rate():
+    url = "https://www.bankofcanada.ca/valet/observations/FXUSDCAD/json?recent=5"
+    response = requests.get(url)
+    if response.status_code == 200:
+        data = response.json()
+        # Adjusted according to the actual API response structure
+        latest_rate = data['observations'][-1]['FXUSDCAD']['v']
+        return latest_rate
     else:
-        tasks = Todo.query.order_by(Todo.date_created).all() # can also use .first() to get the first item, or use SQL query to filter
-        return render_template('index.html', tasks = tasks)
+        print("Failed to fetch data")
+        return None
 
-
-@app.route('/delete/<int:id>')
-def delete(id):
-    task_to_delete = Todo.query.get_or_404(id)
-
-    try:
-        db.session.delete(task_to_delete)
+@app.route('/fetch-rate')
+def fetch_and_store_rate():
+    rate = fetch_exchange_rate()
+    if rate:
+        new_rate = FinancialData(currency_pair="USD/CAD", rate=float(rate))
+        db.session.add(new_rate)
         db.session.commit()
-        return redirect('/')
-    
-    except:
-        return 'There was a problem deleting that task'
-    
-@app.route('/update/<int:id>', methods=['GET','POST'])
-def update(id):
-    task = Todo.query.get_or_404(id)
-    
-    if request.method == 'POST':
-        task.content = request.form['content']
+        return f"Stored new rate: {rate}"
+    return "Failed to fetch and store rate"
 
-        try: 
-            db.session.commit()
-            return redirect('/')
-        except:
-            return 'There was an issue updating your task'
-        
-    else:
-        return render_template('update.html', task = task)
+@app.route('/')
+def index():
+    # Display the latest rates
+    rates = FinancialData.query.order_by(FinancialData.date_fetched.desc()).all()
+    return render_template('index.html', rates=rates)
 
 if __name__ == '__main__':
     app.run(debug=True)
-
