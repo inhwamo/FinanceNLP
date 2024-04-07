@@ -1,44 +1,32 @@
 {% extends 'base.html' %}
 
 {% block head %}
-<title>Task Master</title>
+<title>Exchange Rates and Other Financial News</title>
 
 {% endblock %}
 
 {% block body %} 
 <div class="content">
-    <h1 style="text-align: center">Task Master</h1>
-    {% if tasks|length < 1 %}
-    <h4 style="text-align: center">There are no tasks. Create one below!</h4>
+    <h1 style="text-align: center">Exchange Rate Viewer</h1>
+    {% if rates|length < 1 %}
+    <h4 style="text-align: center">No exchange rates available.</h4>
     {% else %}
 
 
     <table>
         <tr>
-            <th>Task</th>
-            <th>Added</th>
-            <th>Actions</th>
+            <th>Currency Pair</th>
+            <th>Rate</th>
+            <th>Date</th>
         </tr>
-        {% for task in tasks %}
-
+        {% for rate in rates %}
             <tr>
-                <td>{{ task.content }}</td>
-                <td>{{ task.date_created.date() }}</td>
-                <td>
-                    <a href="/delete/{{task.id}}">Delete</a>
-                    <br>
-                    <a href="/update/{{task.id}}">Update</a>
-
-                </td>
-
+                <td>{{ rate.currency_pair }}</td>
+                <td>{{ rate.rate }}</td>
+                <td>{{ rate.date_fetched.strftime('%Y-%m-%d %H:%M:%S') }}</td>
             </tr>
         {% endfor %}
     </table>
     {% endif %}
-
-    <form action="/" method="POST">
-        <input type="text" name="content" id="content">
-        <input type="submit" value="Add Task">
-    </form>
 </div>
 {% endblock %}
