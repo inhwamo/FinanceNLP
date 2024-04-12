@@ -21,6 +21,17 @@ class FinancialData(db.Model):
 
     def __repr__(self):
         return f"<Rate {self.currency_pair} - {self.rate}>"
+    
+class Article(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(255), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    url = db.Column(db.String(1024), unique=True, nullable=False)
+    date_scraped = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f"<Article {self.title}>"
+
 
 def fetch_exchange_rate():
     url = "https://www.bankofcanada.ca/valet/observations/FXUSDCAD/json?recent=5"
