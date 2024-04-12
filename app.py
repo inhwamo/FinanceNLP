@@ -1,16 +1,16 @@
+from dotenv import load_dotenv
 import os
 from flask import Flask, render_template, request, redirect
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import requests
 
+load_dotenv() # loads into os.environ
+
 app = Flask(__name__)
 
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
 
-# Use DATABASE_URL from the environment variables in production (Heroku)
-# Fall back to SQLite for local development
-
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///test.db').replace("postgres://", "postgresql://", 1)
 db = SQLAlchemy(app)
 
 class FinancialData(db.Model):

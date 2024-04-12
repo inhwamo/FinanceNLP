@@ -14,7 +14,7 @@
 # print(content.get_text())
 
 ######
-from .app import db, Article
+from app import db, Article
 
 import requests
 from bs4 import BeautifulSoup
@@ -53,4 +53,3 @@ if __name__ == "__main__":
     for url in urls:
         article_text = scrape_content(url)
         save_article(url, article_text)
-        print(f"Scraped content from {url}:\n{article_text}\n")
