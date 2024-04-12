@@ -14,16 +14,29 @@ db.init_app(app)
 
 @app.route('/fetch-rate')
 def fetch_and_store_rate():
-    message = fetch_exchange_rate()
-    return message
+    try:
+        rate = fetch_exchange_rate()
+        if rate:
+            new_rate = FinancialData(currency_pair="USD/CAD", rate=float(rate), date_fetched=datetime.utcnow())
+            db.session.add(new_rate)
+            db.session.commit()
+            return f"Stored new rate: {rate}"
+        else:
+            return "No rate received from fetch function"
+    except Exception as e:
+        return f"An error occurred: {str(e)}"
 
 @app.route('/scrape-articles')
 def scrape_and_store_articles():
-    for url in urls:
-        content = scrape_content(url)
-        save_article(url, content)
-    return "Articles scraped and stored successfully."
-
+    try:
+        for url in urls:
+            title, content = scrape_content(url)
+            if title and content:
+                save_article(url, title, content)
+        return "Articles scraped and stored successfully."
+    except Exception as e:
+        return f"An error occurred: {str(e)}"
+    
 @app.route('/')
 def index():
     rates = FinancialData.query.order_by(FinancialData.date_fetched.desc()).all()

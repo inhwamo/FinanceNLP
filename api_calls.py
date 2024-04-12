@@ -1,6 +1,6 @@
 import requests
 from datetime import datetime
-from app import db, FinancialData  # Ensure these are imported correctly
+from models import db, FinancialData  # Ensure these are imported correctly
 
 def fetch_exchange_rate():
     try:
@@ -24,3 +24,11 @@ def fetch_exchange_rate():
             return "Failed to fetch data", response.status_code
     except requests.RequestException as e:
         return str(e)
+
+def print_exchange_rate():
+    response = requests.get('https://www.bankofcanada.ca/valet/observations/FXUSDCAD/json?recent=1')
+    data = response.json()
+    rate = data['observations'][0]['FXUSDCAD']['v']
+    print(rate)
+
+
