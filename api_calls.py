@@ -4,7 +4,7 @@ from app import db, FinancialData  # Ensure these are imported correctly
 
 def fetch_exchange_rate():
     try:
-        response = requests.get('https://www.bankofcanada.ca/valet/observations/FXUSDCAD/json?recent=5')
+        response = requests.get('https://www.bankofcanada.ca/valet/observations/FXUSDCAD/json?recent=10') # modify recent value
         if response.status_code == 200:
             data = response.json()
             observations = data.get('observations', [])
